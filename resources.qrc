@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/plugins/CalcArea">
+    <file>CalcArea.png</file>
+  </qresource>
+</RCC>

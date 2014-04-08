@@ -28,8 +28,8 @@ category=Vector
 #tags=
 
 homepage=http://www.vorarlberg.at/vorarlberg/bauen_wohnen/bauen/vermessung_geoinformation/start.htm
-tracker=http://www.vorarlberg.at/vorarlberg/bauen_wohnen/bauen/vermessung_geoinformation/start.htm
-repository=http://plugins.qgis.org/plugins/CalcArea/
+tracker=http://github.com/klausib/CalcArea/issues
+repository=http://github.com/klausib/CalcArea/
 #icon=icon.png
 # experimental flag
 experimental=False

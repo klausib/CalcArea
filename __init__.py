@@ -23,7 +23,7 @@ def icon():
 	return "CalcArea.png"
 
 def version():
-    return "1.0"
+    return "1.1"
 
 def qgisMinimumVersion():
   return "1.0"

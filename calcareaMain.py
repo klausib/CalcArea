@@ -102,13 +102,16 @@ class calcareaMain( QtGui.QWidget): #Inherits QWidget to install an Event filter
         self.iface.removeToolBarIcon(self.actionCalcArea)
 
 
-    #calculate the feature area and
+    #calculate the feature area/perimeter and
     #update the fields of the dialog widget
     def area(self,feat):
-        self.Dialog.lblQuadratmeter.setText(str(round(feat.area(),2)) + ' m²'.decode('utf8'))
-        self.Dialog.lblHektar.setText(str(round(feat.area()/10000,2)) + ' ha'.decode('utf8'))
-        self.Dialog.lblQuadratkilometer.setText(str(round(feat.area()/1000000,2)) + ' km²'.decode('utf8'))
-        #self.Dialog.repaint()
+
+        self.Dialog.lblQuadratmeter.setText(str(round(self.grafArea.measure(feat),2)) + ' m²'.decode('utf8'))
+        self.Dialog.lblHektar.setText(str(round(self.grafArea.measure(feat)/10000,2)) + ' ha'.decode('utf8'))
+        self.Dialog.lblQuadratkilometer.setText(str(round(self.grafArea.measure(feat)/1000000,2)) + ' km²'.decode('utf8'))
+
+        self.Dialog.lblMeter.setText(str(round(self.grafArea.measurePerimeter(feat),2)) + ' m'.decode('utf8'))
+        self.Dialog.lblKilometer.setText(str(round(self.grafArea.measurePerimeter(feat)/1000,2)) + ' km'.decode('utf8'))
 
 
     #slot for the 'geometryChanged' layer signal
@@ -136,7 +139,8 @@ class calcareaMain( QtGui.QWidget): #Inherits QWidget to install an Event filter
         # polygon layer with read/write access -> our possible object
         if layer.type() == 0 and layer.geometryType() == 2 and not layer.isReadOnly():
             self.layer = layer
-            self.Dialog.lblLayer.setText('Layer: ' + self.layer.name())
+            self.Dialog.lblLayer_area.setText('Layer: ' + self.layer.name())
+            self.Dialog.lblLayer_perimeter.setText('Layer: ' + self.layer.name())
             #self.Dialog.repaint()
 
             QtCore.QObject.connect(self.layer, QtCore.SIGNAL('geometryChanged (QgsFeatureId, QgsGeometry &)'), self.seppl)  #geht erst ab 1.9
@@ -147,7 +151,8 @@ class calcareaMain( QtGui.QWidget): #Inherits QWidget to install an Event filter
 
         else:   # wrong layer -> no possible object
             self.layer = None
-            self.Dialog.lblLayer.setText('Layer: ')
+            self.Dialog.lblLayer_area.setText('Layer: ')
+            self.Dialog.lblLayer_perimeter.setText('Layer: ')
             #self.Dialog.repaint()
 
 
@@ -187,14 +192,13 @@ class calcareaMain( QtGui.QWidget): #Inherits QWidget to install an Event filter
 
             if len(a) > 2:  # an area consists of at least three points
 
-                # calculate the area and update the fields of the dialog widget
-                self.Dialog.lblQuadratmeter.setText(str(round(self.grafArea.measurePolygon(a),2)) + ' m²'.decode('utf8'))
-                self.Dialog.lblHektar.setText(str(round(self.grafArea.measurePolygon(a)/10000,2)) + ' ha')
-                self.Dialog.lblQuadratkilometer.setText(str(round(self.grafArea.measurePolygon(a)/1000000,2)) + ' km²'.decode('utf8'))
-                #self.Dialog.repaint()
+
+                # calculate the area/perimeter and update the fields of the dialog widget
+                self.area(QgsGeometry().fromPolygon([a]))
 
 
-    # an event filter - but only for a close event
+
+    # an event filter - but only for the close event
     def eventFilter(self,affe,event):
 
         if not event == None:

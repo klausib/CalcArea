@@ -17,16 +17,16 @@ def name():
     return QCoreApplication.translate("init","CalcArea Plugin")
 
 def description():
-    return QCoreApplication.translate("init","Calculate the Area while editing. Best with Plugin ""Improved Polygon Capturing"".")
+    return QCoreApplication.translate("init","Calculate the Area while editing.")
 
 def icon():
 	return "CalcArea.png"
 
 def version():
-    return "1.1"
+    return "1.2"
 
 def qgisMinimumVersion():
-  return "1.0"
+  return "2.0"
 
 #def category():
 #  return "Database"

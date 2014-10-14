@@ -12,7 +12,7 @@
 name=CalcArea
 qgisMinimumVersion=2.0
 description=this plugin calculates the area of a polygon while it's being created or edited
-version=1.1
+version=1.2
 author=nikolaus batlogg
 email=nikolaus.batlogg@vorarlberg.at
 category=Vector

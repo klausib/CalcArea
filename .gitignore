@@ -220,4 +220,6 @@ pip-log.txt
 *.shp
 *.shx
 *.dbf
+*.exe
+*.bat
 

@@ -31,8 +31,10 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         self.grafArea = QgsDistanceArea()
         self.DialogDock = QtGui.QDockWidget()
         self.Dialog = QtGui.QDialog()
-        self.cpoint = QgsPoint()
+##        self.cpoint = QgsPoint()
+##        self.cpointF = QtCore.QPointF()
         self.cpoint_list = []
+        self.end = False
 
 
         #----------------------------------------------------------------------
@@ -71,7 +73,7 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         self.iface.mainWindow().addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.DialogDock)
         self.DialogDock.show()
 
-        self.Dialog.installEventFilter(self)
+        #self.Dialog.installEventFilter(self)
         self.DialogDock.installEventFilter(self)
 
 
@@ -111,18 +113,38 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
     #update the fields of the dialog widget
     def area(self,feat):
 
-        self.Dialog.lblQuadratmeter.setText(str(round(self.grafArea.measure(feat),2)) + ' m²'.decode('utf8'))
-        self.Dialog.lblHektar.setText(str(round(self.grafArea.measure(feat)/10000,2)) + ' ha'.decode('utf8'))
-        self.Dialog.lblQuadratkilometer.setText(str(round(self.grafArea.measure(feat)/1000000,2)) + ' km²'.decode('utf8'))
+        self.Dialog.lblQuadratmeter.setText(str(round(self.grafArea.measureArea(feat),2)) + ' m²'.decode('utf8'))
+        self.Dialog.lblHektar.setText(str(round(self.grafArea.measureArea(feat)/10000,2)) + ' ha'.decode('utf8'))
+        self.Dialog.lblQuadratkilometer.setText(str(round(self.grafArea.measureArea(feat)/1000000,2)) + ' km²'.decode('utf8'))
+
+##        if len(self.cpoint_list) > 4:  # an area consists of at least three points
+##                        file = open("D:/daten.txt","w+")    #os.path.dirname(__file__) gibt pfad des aktuellen moduls
+##                        #file.write('Dynamisch ' + str(feat.geometry().asWkt()))
+##                        file.write('Dynamisch ' + str(feat.geometry().area()) + ' ' + str(feat.exportToWkt()))
+##                        file.write("\n")
+##                        file.write('Punktliste ' + str(self.cpoint_list))
+##                        file.write("\n")
+##                        #file.write("Hallo")
+##                        file.close()
+
 
         self.Dialog.lblMeter.setText(str(round(self.grafArea.measurePerimeter(feat),2)) + ' m'.decode('utf8'))
         self.Dialog.lblKilometer.setText(str(round(self.grafArea.measurePerimeter(feat)/1000,2)) + ' km'.decode('utf8'))
+
+##        if poly != None:
+##            self.Dialog.lblQuadratmeter.setText(str(round(self.grafArea.computePolygonFlatArea(poly),2)) + ' m²'.decode('utf8'))
+##            #self.Dialog.lblHektar.setText(str(feat.length()))
+##            self.Dialog.lblHektar.setText(str(round(self.grafArea.computePolygonFlatArea(poly)/10000,2)) + ' ha'.decode('utf8'))
+##            self.Dialog.lblQuadratkilometer.setText(str(round(self.grafArea.computePolygonFlatArea(poly)/1000000,2)) + ' km²'.decode('utf8'))
+##            #QtGui.QMessageBox.critical(None, QtCore.QCoreApplication.translate("calcareaMain","Wrong Units!"),str(self.grafArea.computePolygonFlatArea(poly)))
+
+
 
 
     #slot for the 'geometryChanged' layer signal
     def seppl(self,id,feat):
         self.area(feat)
-        self.cpoint_list[:] = []    #then empty the list!
+        self.cpoint_list = []    #then empty the list!
 
 
     #slot for the 'featureAdded' layer signal
@@ -132,7 +154,12 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         iti = self.layer.getFeatures(seli)
         iti.nextFeature(feat)
         self.area(feat.geometry())
-        self.cpoint_list[:] = []    #then empty the list!
+##        file = open("D:/daten.txt","a")    #os.path.dirname(__file__) gibt pfad des aktuellen moduls
+##        file.write('Feature Added ' + str(feat.geometry().area()) + ' ' + str(feat.geometry().exportToWkt()))
+##        #file.write(str(self.cpoint_list))
+##        #
+##        file.close()
+        self.cpoint_list = []    #then empty the list!
 
 
 
@@ -158,6 +185,7 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
 
 
 
+
         else:   # wrong layer type
             self.layer = None
             self.Dialog.lblLayer_area.setText('Layer: ')
@@ -172,7 +200,18 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         Aktion = self.mc.mapTool()
         self.maptool = Aktion
 
-        if Aktion.action().objectName().find('AddFeature') > -1 :   # edit tool AddFeature
+        # If the tool is without a name attribute
+        if Aktion.action() == None :
+            self.Aufzeichnen = False
+            self.Dialog.lblQuadratmeter.setText('')
+            self.Dialog.lblHektar.setText('')
+            self.Dialog.lblQuadratkilometer.setText('')
+            self.Dialog.lblMeter.setText('')
+            self.Dialog.lblKilometer.setText('')
+            QtCore.QObject.disconnect(self.mc, QtCore.SIGNAL('xyCoordinates ( const QgsPoint &) '), self.temp_vertex)
+            #self.Dialog.repaint()
+
+        elif Aktion.action().objectName().find('AddFeature') > -1 :   # edit tool AddFeature
 
             QtCore.QObject.connect(self.mc, QtCore.SIGNAL('xyCoordinates ( const QgsPoint &) '), self.temp_vertex)
 
@@ -196,19 +235,19 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
     # slot for the xyCoordinates signal of the map canvas
     def temp_vertex(self,point):
 
-        self.cpoint.setX(point.x())
-        self.cpoint.setY(point.y())
-
+##        self.cpoint.setX(point.x())
+##        self.cpoint.setY(point.y())
+        b = []
         b = self.cpoint_list[:]
         b.append(point) # add the coordinate of the current mouse position
 
+
         if len(b) > 2:  # an area consists of at least three points
-
-            # calculate the area/perimeter and update the fields of the dialog widget
-            self.area(QgsGeometry().fromPolygon([b]))
+             self.area(QgsGeometry().fromPolygon([b]))
 
 
-    # event filter for the close event
+
+    # event filter
     def eventFilter(self,affe,event):
 
         if not event == None:
@@ -226,7 +265,8 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
 
 
 
-                self.Dialog.removeEventFilter(self)
+
+                #self.Dialog.removeEventFilter(self)
                 self.DialogDock.removeEventFilter(self)
 
                 # delete the Widgets!
@@ -237,8 +277,16 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
                 return True
 
             elif event.type() == QtCore.QEvent.MouseButtonPress: # mouse press event during edit session
-                self.cpoint_list.append(QgsPoint(self.cpoint))
-                return False    #do not block the event
+
+                transi = self.mc.getCoordinateTransform()
+                X_ = event.posF().x()
+                Y_ = event.posF().y()
+                if event.button() == QtCore.Qt.LeftButton:
+                    self.cpoint_list.append(QgsPoint(transi.toMapCoordinatesF(X_,Y_)))
+                    return True    #do not block the event
+                elif event.button() == QtCore.Qt.RightButton:
+                    self.cpoint_list= []
+                    return True
             else:   # everything else
                 return False
 

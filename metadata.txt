@@ -11,8 +11,9 @@
 [general]
 name=CalcArea
 qgisMinimumVersion=2.0
+qgisMaximumVersion=2.18
 description=this plugin calculates the area of a polygon while it's being created or edited
-version=1.2
+version=1.2.1
 author=nikolaus batlogg
 email=nikolaus.batlogg@vorarlberg.at
 category=Vector
@@ -27,7 +28,7 @@ category=Vector
 # tags are comma separated with spaces allowed
 #tags=
 
-homepage=http://www.vorarlberg.at/vorarlberg/bauen_wohnen/bauen/vermessung_geoinformation/start.htm
+homepage=http://github.com/klausib/CalcArea/
 tracker=http://github.com/klausib/CalcArea/issues
 repository=http://github.com/klausib/CalcArea/
 #icon=icon.png

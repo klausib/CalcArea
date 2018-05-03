@@ -31,8 +31,6 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         self.grafArea = QgsDistanceArea()
         self.DialogDock = QtGui.QDockWidget()
         self.Dialog = QtGui.QDialog()
-##        self.cpoint = QgsPoint()
-##        self.cpointF = QtCore.QPointF()
         self.cpoint_list = []
         self.end = False
 
@@ -117,28 +115,9 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         self.Dialog.lblHektar.setText(str(round(self.grafArea.measureArea(feat)/10000,2)) + ' ha'.decode('utf8'))
         self.Dialog.lblQuadratkilometer.setText(str(round(self.grafArea.measureArea(feat)/1000000,2)) + ' km²'.decode('utf8'))
 
-##        if len(self.cpoint_list) > 4:  # an area consists of at least three points
-##                        file = open("D:/daten.txt","w+")    #os.path.dirname(__file__) gibt pfad des aktuellen moduls
-##                        #file.write('Dynamisch ' + str(feat.geometry().asWkt()))
-##                        file.write('Dynamisch ' + str(feat.geometry().area()) + ' ' + str(feat.exportToWkt()))
-##                        file.write("\n")
-##                        file.write('Punktliste ' + str(self.cpoint_list))
-##                        file.write("\n")
-##                        #file.write("Hallo")
-##                        file.close()
-
 
         self.Dialog.lblMeter.setText(str(round(self.grafArea.measurePerimeter(feat),2)) + ' m'.decode('utf8'))
         self.Dialog.lblKilometer.setText(str(round(self.grafArea.measurePerimeter(feat)/1000,2)) + ' km'.decode('utf8'))
-
-##        if poly != None:
-##            self.Dialog.lblQuadratmeter.setText(str(round(self.grafArea.computePolygonFlatArea(poly),2)) + ' m²'.decode('utf8'))
-##            #self.Dialog.lblHektar.setText(str(feat.length()))
-##            self.Dialog.lblHektar.setText(str(round(self.grafArea.computePolygonFlatArea(poly)/10000,2)) + ' ha'.decode('utf8'))
-##            self.Dialog.lblQuadratkilometer.setText(str(round(self.grafArea.computePolygonFlatArea(poly)/1000000,2)) + ' km²'.decode('utf8'))
-##            #QtGui.QMessageBox.critical(None, QtCore.QCoreApplication.translate("calcareaMain","Wrong Units!"),str(self.grafArea.computePolygonFlatArea(poly)))
-
-
 
 
     #slot for the 'geometryChanged' layer signal
@@ -154,11 +133,7 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         iti = self.layer.getFeatures(seli)
         iti.nextFeature(feat)
         self.area(feat.geometry())
-##        file = open("D:/daten.txt","a")    #os.path.dirname(__file__) gibt pfad des aktuellen moduls
-##        file.write('Feature Added ' + str(feat.geometry().area()) + ' ' + str(feat.geometry().exportToWkt()))
-##        #file.write(str(self.cpoint_list))
-##        #
-##        file.close()
+
         self.cpoint_list = []    #then empty the list!
 
 
@@ -235,8 +210,7 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
     # slot for the xyCoordinates signal of the map canvas
     def temp_vertex(self,point):
 
-##        self.cpoint.setX(point.x())
-##        self.cpoint.setY(point.y())
+
         b = []
         b = self.cpoint_list[:]
         b.append(point) # add the coordinate of the current mouse position

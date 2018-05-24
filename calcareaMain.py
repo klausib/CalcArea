@@ -83,6 +83,8 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         # emits a layer change event
         QtCore.QObject.connect(self.iface, QtCore.SIGNAL("currentLayerChanged (QgsMapLayer *)"), self.switch_layer)
 
+        # initialize the maptool object
+        self.maptool = self.mc.mapTool()
 
         # if an edit session already has been started
         if self.mc.mapTool().isEditTool():
@@ -96,6 +98,7 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
 
     # if the plugin leaves QGIS
     def unload(self):
+
 
         #first delete the Widgets!
         self.Dialog = None
@@ -133,14 +136,24 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
         iti = self.layer.getFeatures(seli)
         iti.nextFeature(feat)
         self.area(feat.geometry())
-
         self.cpoint_list = []    #then empty the list!
+
+
+    # slot for the 'selectionChanged' signal
+    def switch_feature(self):
+        features = self.layer.selectedFeatures()
+
+        if not features == None:
+            if len (features) == 1:
+                self.area(features[0].geometry())
+            if len (features) > 1:
+                self.layer.removeSelection()
+
 
 
 
     # slot for the 'currentLayerChanged' signal emitted by the QGIS iface
     def switch_layer(self,layer):
-
 
         # to prevent an error when closing QGIS
         # while the plugin is still active
@@ -152,13 +165,10 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
             self.layer = layer
             self.Dialog.lblLayer_area.setText('Layer: ' + self.layer.name())
             self.Dialog.lblLayer_perimeter.setText('Layer: ' + self.layer.name())
-            #self.Dialog.repaint()
 
-            QtCore.QObject.connect(self.layer, QtCore.SIGNAL('geometryChanged (QgsFeatureId, QgsGeometry &)'), self.seppl)  #geht erst ab 1.9
+            QtCore.QObject.connect(self.layer, QtCore.SIGNAL('geometryChanged (QgsFeatureId, QgsGeometry &)'), self.seppl)
             QtCore.QObject.connect(self.layer, QtCore.SIGNAL('featureAdded (QgsFeatureId)'), self.kasperl)
-
-
-
+            QtCore.QObject.connect(self.layer, QtCore.SIGNAL("selectionChanged ()"), self.switch_feature)
 
 
         else:   # wrong layer type
@@ -184,7 +194,6 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
             self.Dialog.lblMeter.setText('')
             self.Dialog.lblKilometer.setText('')
             QtCore.QObject.disconnect(self.mc, QtCore.SIGNAL('xyCoordinates ( const QgsPoint &) '), self.temp_vertex)
-            #self.Dialog.repaint()
 
         elif Aktion.action().objectName().find('AddFeature') > -1 :   # edit tool AddFeature
 
@@ -236,12 +245,11 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
                 if not self.layer == None:
                     QtCore.QObject.disconnect(self.layer, QtCore.SIGNAL('geometryChanged (QgsFeatureId, QgsGeometry &)'), self.seppl)  #geht erst ab 1.9
                     QtCore.QObject.disconnect(self.layer, QtCore.SIGNAL('featureAdded (QgsFeatureId)'), self.kasperl)
-
-
-
+                    QtCore.QObject.disconnect(self.layer, QtCore.SIGNAL("selectionChanged ()"), self.switch_feature)
 
                 #self.Dialog.removeEventFilter(self)
                 self.DialogDock.removeEventFilter(self)
+                self.iface.mapCanvas().viewport().removeEventFilter( self)
 
                 # delete the Widgets!
                 self.Dialog = None  # delete
@@ -251,16 +259,24 @@ class calcareaMain( QtGui.QWidget): # Inherits QWidget to install an Event filte
                 return True
 
             elif event.type() == QtCore.QEvent.MouseButtonPress: # mouse press event during edit session
-
-                transi = self.mc.getCoordinateTransform()
                 X_ = event.posF().x()
                 Y_ = event.posF().y()
-                if event.button() == QtCore.Qt.LeftButton:
-                    self.cpoint_list.append(QgsPoint(transi.toMapCoordinatesF(X_,Y_)))
-                    return True    #do not block the event
-                elif event.button() == QtCore.Qt.RightButton:
-                    self.cpoint_list= []
-                    return True
+                transi = self.mc.getCoordinateTransform()
+
+                # A Feature is edited using the NodeTool -> Generating a slection initiates the recalculation of the newly selected feature's area
+                if self.maptool.action().objectName().find('NodeTool') > -1 :   # edit tool NodeTool
+                    self.layer.removeSelection()
+                    shift=self.mc.mapUnitsPerPixel()
+                    wahlRect = QgsRectangle(transi.toMapCoordinatesF(X_-5,Y_-5),transi.toMapCoordinatesF(X_+5,Y_+5))
+                    self.layer.select(wahlRect,False)
+                    return False    #do not block the event
+                else:
+                    if event.button() == QtCore.Qt.LeftButton:
+                        self.cpoint_list.append(QgsPoint(transi.toMapCoordinatesF(X_,Y_)))
+                        return False    #do not block the event
+                    elif event.button() == QtCore.Qt.RightButton:
+                        self.cpoint_list= []
+                        return False
             else:   # everything else
                 return False
 
